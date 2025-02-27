@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Custom Soundboard</title>
+    <style>
+      :root {
+        --primary-color: #4a148c;
+        --secondary-color: #7b1fa2;
+        --accent-color: #e040fb;
+        --background-color: #f5f5f5;
+        --text-color: #212121;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 1rem 2rem;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        padding: 1rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+        background-color: var(--secondary-color);
+        align-items: center;
+      }
+
+      .playback-controls {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .control-btn {
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .control-btn:hover {
+        background-color: #aa00ff;
+        transform: scale(1.1);
+      }
+
+      .control-btn:active {
+        transform: scale(0.95);
+      }
+
+      .volume-control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: white;
+        position: relative;
+      }
+
+      .volume-control input {
+        width: 120px;
+      }
+
+      .volume-percentage {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--primary-color);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+      }
+
+      .category-selector {
+        padding: 0.5rem;
+        border-radius: 4px;
+        border: none;
+        background-color: white;
+      }
+
+      main {
+        flex: 1;
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      .search-container {
+        margin-bottom: 1rem;
+        width: 100%;
+      }
+
+      #search-input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+
+      .soundboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .sound-button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 1.5rem 1rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 120px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+        word-break: break-word;
+      }
+
+      .sound-button:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-3px);
+      }
+
+      .sound-button:active {
+        transform: translateY(0);
+        background-color: var(--accent-color);
+      }
+
+      .sound-button i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        z-index: 1;
+      }
+
+      .sound-button span {
+        z-index: 1;
+        max-width: 100%;
+      }
+
+      /* Sound button effects */
+      .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.4);
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        pointer-events: none;
+      }
+
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+
+      .playing {
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(224, 64, 251, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(224, 64, 251, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(224, 64, 251, 0);
+        }
+      }
+
+      footer {
+        text-align: center;
+        padding: 1rem;
+        background-color: var(--primary-color);
+        color: white;
+        margin-top: auto;
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 768px) {
+        .soundboard {
+          grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        }
+
+        .sound-button {
+          height: 100px;
+          padding: 1rem 0.5rem;
+          font-size: 0.9rem;
+        }
+
+        .controls {
+          flex-direction: column;
+          gap: 1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 1.8rem;
+        }
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <header>
+      <h1>Custom Soundboard</h1>
+      <p>Click on a sound to play it!</p>
+    </header>
+
+    <div class="controls">
+      <div class="playback-controls">
+        <button class="control-btn" id="stop-btn">
+          <i class="fas fa-stop"></i>
+        </button>
+        <button class="control-btn" id="play-btn">
+          <i class="fas fa-play"></i>
+        </button>
+      </div>
+
+      <div class="volume-control">
+        <span class="volume-percentage" id="volume-percentage">70%</span>
+        <i class="fas fa-volume-up"></i>
+        <input type="range" id="volume" min="0" max="100" step="1" value="70" />
+      </div>
+
+      <select class="category-selector" id="category-filter">
+        <option value="all">All Sounds</option>
+        <option value="wav">WAV Files</option>
+        <option value="mp3">MP3 Files</option>
+        <option value="mp4">MP4 Files</option>
+      </select>
+    </div>
+
+    <main>
+      <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search sounds..." />
+      </div>
+
+      <div class="soundboard" id="soundboard">
+        <!-- Sound buttons will be generated here -->
+      </div>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 Custom Soundboard</p>
+    </footer>
+
+    <script>
+      // Parse the file list and create sounds data
+      // Only include actual sound files (wav, mp3, mp4)
+      const allFiles = `aaajaijaij.wav
+aha.wav
+ahaha.wav
+aivittu.wav
+ajajaväärinpäin.wav
+aklla.wav
+aklla132222.wav
+ammuinlipallisen.wav
+ammukytäöt.wav
+anteeksm itä.wav
+antekeksitiät.wav
+arghh222.wav
+arghhhhhhh.wav
+asiavilipitänm.wav
+askelista.wav
+awikalla.wav
+awikalla2222.wav
+bastirol.wav
+battarväärinpäin.wav
+chacha.wav
+chat-is-my-family-vorhala.mp3
+chatti.wav
+chatti2.wav
+dippi1.wav
+dippi2.wav
+dippidipipi.wav
+dontwörm,mymisteiks.wav
+eiii.wav
+enkuule.wav
+etukkaaaasdadsads.wav
+fibi-paikalle-vorhala.mp3
+frozenteltta.wav
+föösppööösön.wav
+hakkeri.wav
+halleluja.wav
+hannuhanhentuuri.wav
+heihei.wav
+helekatinpässikusipaa.wav
+helevetinpässi.wav
+hienostiethtyh.wav
+huumorituulella.wav
+hyvätsnikpet.wav
+hönönauru.wav
+ietokranuUntitled.wav
+ipi.mp4
+jhooooo322332.wav
+jointti.wav
+joo.wav
+jos-ei-kiinnosta-vorhala.mp3
+j_Ärjenjättiläinen.wav
+kaikihajos.wav
+kalakiwa.wav
+kale.wav
+kale1.wav
+kale2.wav
+kale3.wav
+kale4.wav
+karsivallisyys-loppu-vorhala.mp3
+katoeuspray.wav
+kiitoksii.wav
+kiitos-serveri-vorhala.mp3
+kiittipeleistwav.wav
+kohdevarastiseriffinautoin.wav
+kona.wav
+koodihaisee.wav
+kröhöm.wav
+kusipää.wav
+kuulutus.wav
+kysytvaan.wav
+loistavaatyöpäivää.wav
+lololoii.wav
+lololoiiväärinopäin.wav
+loo12kilkooUntitled.wav
+mc-on-pienella-lomalla-vorhala.mp3
+mctarjoomakkarat.wav
+mika-vittu-sua-vaivaa-vorhala.mp3
+millastonaollastriimaaja.wav
+milläjärjellä123123123.wav
+milläjärjelläö.wav
+mitas-vittua-se-sulle-kuuluu-vorhala.mp3
+moimoi.wav
+mäoontyhmä.wav
+nauraahyvä.wav
+neekerinpoika.wav
+niinni iaijaa.wav
+nisti.wav
+noniiinsitten2.wav
+Nukkumaanmenoaikajuho.wav
+nättii.wav
+onksmunpakkoeplata.wav
+paistaamakkaraa.wav
+pienempääturpaa.wav
+pressa-sekoaa-vorhala.mp3
+rapbiisi.wav
+rauhallista.wav
+reizarin-napit-hukassa-vorhala.mp3
+rennopsti.wav
+romanit.wav
+rutinajkäy.wav
+rutinakäy.wav
+sanotaankonäin.wav
+seellauhattu.wav
+seis-vorhala.mp3
+selevätulivapaa.wav
+semmosrta.wav
+sieltäsetuli.wav
+siskon makkara.wav
+somaleidenystävä.wav
+soribännit.wav
+suomenmaata-vorhala.mp3
+syyttäväsormi.wav
+säikähin.wav
+säteitivrheen.wav
+tanssinhiilillä.wav
+tanzzi.mp4
+taputtaja.wav
+teboil.wav
+toistaseks-rauhallista-vorhala.mp3
+torillanapattukarkuun.wav
+trolleja-tulee-paljon-vorhala.mp3
+tsattitauko.wav
+tuleealle.wav
+tuli-on-vapaa-vorhala.mp3
+tuliprefirellä.wav
+tuliteteen.wav
+tuotaniinniin2.wav
+tuotaniinnin.wav
+tuurijätkä.wav
+unelmistaottta.wav
+vieläkövitsilentää.wav
+viimenentanssi.wav
+vittukueiosu.wav
+vittumitäpaskaa.wav
+vittutoaaimbot.wav
+vituhyväörp.wav
+vuorelansatmaa.wav
+welcome bigballs.wav
+wiccalaulaa.wav
+wodaap.wav
+worholhaisee.wav
+xdddddd.mp4
+yksvitunsnaivelä.wav
+äänijuhu.wav`;
+
+      // The folder where all sound files are located
+      const soundsFolder = "sounds/";
+
+      // Filter only media files and create sound data
+      const soundsData = allFiles
+        .split("\n")
+        .filter((filename) => /\.(wav|mp3|mp4)$/i.test(filename))
+        .map((filename, index) => {
+          // Determine appropriate icon based on file extension
+          let icon = "fa-volume-high";
+          let category = "wav";
+
+          if (filename.endsWith(".mp3")) {
+            icon = "fa-music";
+            category = "mp3";
+          } else if (filename.endsWith(".mp4")) {
+            icon = "fa-video";
+            category = "mp4";
+          }
+
+          // Create a friendly name by removing extension and replacing special characters
+          const friendlyName = filename
+            .replace(/\.(wav|mp3|mp4)$/i, "")
+            .replace(/-/g, " ");
+
+          return {
+            id: index + 1,
+            name: friendlyName,
+            displayName:
+              friendlyName.length > 18
+                ? friendlyName.substring(0, 18) + "..."
+                : friendlyName,
+            file: filename,
+            // Add the sounds folder path here
+            filePath: soundsFolder + filename,
+            category: category,
+            icon: icon,
+          };
+        });
+
+      // DOM Elements
+      const soundboard = document.getElementById("soundboard");
+      const volumeControl = document.getElementById("volume");
+      const volumePercentage = document.getElementById("volume-percentage");
+      const categoryFilter = document.getElementById("category-filter");
+      const stopBtn = document.getElementById("stop-btn");
+      const playBtn = document.getElementById("play-btn");
+      const searchInput = document.getElementById("search-input");
+
+      // Audio context
+      let audioContext;
+      let gainNode;
+      let currentAudio = null;
+      let lastPlayedSound = null;
+      let activeSoundButton = null;
+
+      // Initialize Audio Context on user interaction
+      function initAudioContext() {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+          gainNode = audioContext.createGain();
+          gainNode.gain.value = volumeControl.value / 100;
+          gainNode.connect(audioContext.destination);
+        }
+      }
+
+      // Update volume percentage display
+      function updateVolumePercentage() {
+        volumePercentage.textContent = `${volumeControl.value}%`;
+      }
+
+      // Create ripple effect
+      function createRipple(event, element) {
+        const circle = document.createElement("span");
+        const diameter = Math.max(element.clientWidth, element.clientHeight);
+        const radius = diameter / 2;
+
+        const rect = element.getBoundingClientRect();
+
+        circle.style.width = circle.style.height = `${diameter}px`;
+        circle.style.left = `${event.clientX - rect.left - radius}px`;
+        circle.style.top = `${event.clientY - rect.top - radius}px`;
+        circle.classList.add("ripple");
+
+        const ripple = element.getElementsByClassName("ripple")[0];
+
+        if (ripple) {
+          ripple.remove();
+        }
+
+        element.appendChild(circle);
+      }
+
+      // Play sound function - updated to use the file path with sounds folder
+      function playSound(soundFile, button) {
+        initAudioContext();
+
+        // Remove playing class from previous button
+        if (activeSoundButton) {
+          activeSoundButton.classList.remove("playing");
+        }
+
+        // Stop any currently playing sound
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+
+        // Create a new audio element
+        const audio = new Audio(soundFile);
+        currentAudio = audio;
+        lastPlayedSound = soundFile;
+
+        // Connect to gain node for volume control
+        const source = audioContext.createMediaElementSource(audio);
+        source.connect(gainNode);
+
+        // Play the sound
+        audio.play().catch((error) => {
+          console.error("Error playing sound:", error);
+          alert(
+            "Error playing sound. Make sure the sound file exists in the 'sounds' folder."
+          );
+        });
+
+        // Add playing class to button
+        if (button) {
+          button.classList.add("playing");
+          activeSoundButton = button;
+        }
+
+        // Remove connections when sound ends
+        audio.onended = function () {
+          currentAudio = null;
+          if (button) {
+            button.classList.remove("playing");
+            activeSoundButton = null;
+          }
+        };
+      }
+
+      // Stop sound function
+      function stopSound() {
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+          currentAudio = null;
+
+          if (activeSoundButton) {
+            activeSoundButton.classList.remove("playing");
+            activeSoundButton = null;
+          }
+        }
+      }
+
+      // Render sounds to the soundboard
+      function renderSounds(sounds) {
+        // Clear existing sounds
+        soundboard.innerHTML = "";
+
+        // Add sound buttons
+        sounds.forEach((sound) => {
+          const soundButton = document.createElement("button");
+          soundButton.className = "sound-button";
+          soundButton.dataset.soundId = sound.id;
+          // Use the filePath with the sounds folder instead of just file
+          soundButton.dataset.soundFile = sound.filePath;
+          soundButton.title = sound.name; // Full name on hover
+          soundButton.innerHTML = `
+                    <i class="fas ${sound.icon}"></i>
+                    <span>${sound.displayName}</span>
+                `;
+
+          soundButton.addEventListener("click", (event) => {
+            // Use the filePath with the sounds folder
+            playSound(sound.filePath, soundButton);
+            createRipple(event, soundButton);
+          });
+
+          soundboard.appendChild(soundButton);
+        });
+      }
+
+      // Filter sounds by category and search term
+      function filterSounds() {
+        const category = categoryFilter.value;
+        const searchTerm = searchInput.value.toLowerCase();
+
+        let filteredSounds = soundsData;
+
+        // Filter by category if not "all"
+        if (category !== "all") {
+          filteredSounds = filteredSounds.filter(
+            (sound) => sound.category === category
+          );
+        }
+
+        // Filter by search term
+        if (searchTerm) {
+          filteredSounds = filteredSounds.filter((sound) =>
+            sound.name.toLowerCase().includes(searchTerm)
+          );
+        }
+
+        renderSounds(filteredSounds);
+      }
+
+      // Event Listeners
+      volumeControl.addEventListener("input", () => {
+        if (gainNode) {
+          gainNode.gain.value = volumeControl.value / 100;
+        }
+        updateVolumePercentage();
+      });
+
+      categoryFilter.addEventListener("change", filterSounds);
+      searchInput.addEventListener("input", filterSounds);
+
+      // Stop button event
+      stopBtn.addEventListener("click", (event) => {
+        stopSound();
+        createRipple(event, stopBtn);
+      });
+
+      // Play button event
+      playBtn.addEventListener("click", (event) => {
+        if (lastPlayedSound) {
+          const buttons = document.querySelectorAll(".sound-button");
+          let matchedButton = null;
+
+          buttons.forEach((button) => {
+            if (button.dataset.soundFile === lastPlayedSound) {
+              matchedButton = button;
+            }
+          });
+
+          playSound(lastPlayedSound, matchedButton);
+        }
+        createRipple(event, playBtn);
+      });
+
+      // Initialize the soundboard and volume display
+      renderSounds(soundsData);
+      updateVolumePercentage();
+    </script>
+  </body>
+</html>
