@@ -226,6 +226,19 @@
         margin-top: auto;
       }
 
+      .visitor-counter {
+        margin-top: 0.5rem;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1.2rem;
+        background-color: #000;
+        color: #0f0;
+        padding: 0.5rem 1rem;
+        border: 2px solid #fff;
+        display: inline-block;
+        border-radius: 4px;
+        text-align: center;
+      }
+
       /* Video Modal Styles */
       .modal-overlay {
         position: fixed;
@@ -353,6 +366,7 @@
     <header>
       <h1>Wicca Magical Soundboard</h1>
       <p>Click on a sound to play it!</p>
+      <div class="visitor-counter" id="visitorCounter">Visitors: 10435</div>
     </header>
 
     <div class="controls">
@@ -405,7 +419,7 @@
     </div>
 
     <footer>
-      <p>&copy; 2025 yuccaducca</p>
+      <p>© 2025 yuccaducca</p>
     </footer>
 
     <script>
@@ -602,6 +616,7 @@ yksvitunsnaivelä.wav`;
       const videoPlayer = document.getElementById("videoPlayer");
       const videoTitle = document.getElementById("videoTitle");
       const closeModal = document.getElementById("closeModal");
+      const visitorCounter = document.getElementById("visitorCounter");
 
       // Audio context
       let audioContext;
@@ -809,6 +824,21 @@ yksvitunsnaivelä.wav`;
         renderSounds(filteredSounds);
       }
 
+      // Visitor counter functionality
+      function updateVisitorCounter() {
+        let visitorCount = localStorage.getItem("visitorCount");
+        if (!visitorCount) {
+          visitorCount = 10435; // Starting number
+        } else {
+          visitorCount = parseInt(visitorCount, 10);
+        }
+        visitorCount += 1;
+        localStorage.setItem("visitorCount", visitorCount);
+        visitorCounter.textContent = `Visitors: ${visitorCount
+          .toString()
+          .padStart(6, "0")}`; // Pad with zeros for old-school look
+      }
+
       // Event Listeners
       volumeControl.addEventListener("input", () => {
         if (gainNode) {
@@ -860,9 +890,10 @@ yksvitunsnaivelä.wav`;
         }
       });
 
-      // Initialize the soundboard and volume display
+      // Initialize the soundboard, volume display, and visitor counter
       renderSounds(soundsData);
       updateVolumePercentage();
+      updateVisitorCounter();
     </script>
   </body>
 </html>
